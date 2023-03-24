@@ -1,6 +1,6 @@
 import Tap from 'tap'
 import { Kafka } from 'kafkajs'
-import { ConsumerState, ProducerState, KafkaJSStatusUpdater } from '../src'
+import { ConsumerState, ProducerState, KafkaJSStatusUpdater } from '../src/lib/kafkaHealthChecker'
 
 Tap.test('Unit tests: ', async t => {
   await t.test('Status updater test', async t => {

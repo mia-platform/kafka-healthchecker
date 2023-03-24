@@ -1,6 +1,6 @@
 import Tap from 'tap'
 import { Kafka } from 'kafkajs'
-import { KafkaJSHealthChecker } from '../src'
+import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 
 Tap.test('Integration tests: ', async t => {
   const kafka = new Kafka({
