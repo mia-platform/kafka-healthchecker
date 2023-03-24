@@ -3,24 +3,25 @@ import { Kafka } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src'
 
 Tap.test('Integration tests: ', async t => {
+  const kafka = new Kafka({
+    clientId: 'my-app',
+    brokers: ['localhost:9092', 'localhost:9093'],
+  })
+
+  const firstConsumer = kafka.consumer({ groupId: 'test-group' })
+  const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
+  const producer = kafka.producer()
+
   await t.test('KafkaJSHealthChecker returns the correct health status with only one consumer', async assert => {
-    const kafka = new Kafka({
-      clientId: 'my-app',
-      brokers: ['localhost:9092', 'localhost:9093'],
-    })
-
-    const consumer = kafka.consumer({ groupId: 'test-group' })
-    const producer = kafka.producer()
-
-    const healthChecker = new KafkaJSHealthChecker([consumer], [producer])
+    const healthChecker = new KafkaJSHealthChecker([firstConsumer], [producer])
 
     assert.ok(healthChecker.isHealthy())
     assert.notOk(healthChecker.isReady())
 
-    await consumer.connect()
-    await consumer.subscribe({ topic: 'test-topic', fromBeginning: true })
+    await firstConsumer.connect()
+    await firstConsumer.subscribe({ topic: 'test-topic', fromBeginning: true })
 
-    await consumer.run({
+    await firstConsumer.run({
       eachMessage: async({ message }) => {
         assert.equal(message?.value?.toString(), 'test message')
       },
@@ -48,7 +49,7 @@ Tap.test('Integration tests: ', async t => {
     assert.ok(healthChecker.isReady())
 
     await producer.disconnect()
-    await consumer.disconnect()
+    await firstConsumer.disconnect()
 
     assert.notOk(healthChecker.isHealthy())
     assert.notOk(healthChecker.isReady())
@@ -58,15 +59,6 @@ Tap.test('Integration tests: ', async t => {
   })
 
   await t.test('KafkaJSHealthChecker returns the correct health status with two consumers', async assert => {
-    const kafka = new Kafka({
-      clientId: 'my-app',
-      brokers: ['localhost:9092', 'localhost:9093'],
-    })
-
-    const firstConsumer = kafka.consumer({ groupId: 'test-group' })
-    const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
-    const producer = kafka.producer()
-
     const healthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer])
 
     assert.ok(healthChecker.isHealthy())
@@ -124,15 +116,6 @@ Tap.test('Integration tests: ', async t => {
 
   await t.test('KafkaJSHealthChecker returns the correct health status with two consumers and only one fails with checkStatusForAll false', async assert => {
     const configuration = { checkStatusForAll: false }
-
-    const kafka = new Kafka({
-      clientId: 'my-app',
-      brokers: ['localhost:9092', 'localhost:9093'],
-    })
-
-    const firstConsumer = kafka.consumer({ groupId: 'test-group' })
-    const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
-    const producer = kafka.producer()
 
     const healthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer], configuration)
 
