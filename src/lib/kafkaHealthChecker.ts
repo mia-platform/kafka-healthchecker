@@ -15,52 +15,8 @@
  */
 
 import { Consumer, Producer } from 'kafkajs'
-
-type Status = {
-    healthy: boolean,
-    ready: boolean
-}
-
-export type ConsumerState = {
-    consumer: Consumer,
-    status: Status
-}
-
-export type ProducerState = {
-    producer: Producer,
-    status: Status
-}
-
-type Configuration = {
-  checkStatusForAll: boolean
-}
-
-export class KafkaJSStatusUpdater {
-  // consumer
-  setConsumerConnectStatus(consumerState: ConsumerState): void {
-    consumerState.status = { healthy: true, ready: false }
-  }
-  setConsumerGroupJoinStatus(consumerState: ConsumerState): void {
-    consumerState.status = { healthy: true, ready: true }
-  }
-  setConsumerStopStatus(consumerState: ConsumerState): void {
-    consumerState.status = { healthy: true, ready: false }
-  }
-  setConsumerDisconnectStatus(consumerState: ConsumerState): void {
-    consumerState.status = { healthy: false, ready: false }
-  }
-  setConsumerCrashStatus(consumerState: ConsumerState, event: any): void {
-    consumerState.status = { healthy: event.payload.restart, ready: false }
-  }
-
-  // producer
-  setProducerConnectStatus(producerState: ProducerState): void {
-    producerState.status = { healthy: true, ready: true }
-  }
-  setProducerDisconnectStatus(producerState: ProducerState): void {
-    producerState.status = { healthy: false, ready: false }
-  }
-}
+import { KafkaJSStatusUpdater } from './statusUpdater'
+import { ConsumerState, ProducerState, Configuration } from './types'
 
 interface KafkaHealthChecker {
   isHealthy() : boolean
@@ -68,8 +24,8 @@ interface KafkaHealthChecker {
 }
 
 export class KafkaJSHealthChecker implements KafkaHealthChecker {
-  private simpleConsumers: ConsumerState[] = []
-  private simpleProducers: ProducerState[] = []
+  private consumers: ConsumerState[] = []
+  private producers: ProducerState[] = []
   private configuration: Configuration = { checkStatusForAll: true }
   private statusUpdater = new KafkaJSStatusUpdater()
 
@@ -81,23 +37,24 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     if (configuration) {
       this.configuration = configuration
     }
+
     if (consumers) {
       consumers.forEach(consumer => {
-        const simpleConsumer = this.configureConsumer(consumer)
-        this.simpleConsumers.push(simpleConsumer)
+        const simpleConsumer = this.addListenersToConsumer(consumer)
+        this.consumers.push(simpleConsumer)
       })
     }
 
     if (producers) {
       producers.forEach(producer => {
-        const simpleProducer = this.configureProducer(producer)
-        this.simpleProducers.push(simpleProducer)
+        const simpleProducer = this.addListenersToProducer(producer)
+        this.producers.push(simpleProducer)
       })
     }
   }
 
   isHealthy(): boolean {
-    if ((this.simpleConsumers.length + this.simpleProducers.length) <= 0) {
+    if ((this.consumers.length + this.producers.length) <= 0) {
       return false
     }
 
@@ -108,7 +65,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
   }
 
   isReady(): boolean {
-    if ((this.simpleConsumers.length + this.simpleProducers.length) <= 0) {
+    if ((this.consumers.length + this.producers.length) <= 0) {
       return false
     }
 
@@ -118,7 +75,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     return this.atLeastOneConsumerOrProducerIsReady()
   }
 
-  private configureConsumer(consumer: Consumer) : ConsumerState {
+  private addListenersToConsumer(consumer: Consumer) : ConsumerState {
     const consumerState: ConsumerState = { consumer, status: { healthy: true, ready: false } }
     const { CONNECT, GROUP_JOIN, DISCONNECT, CRASH, STOP } = consumer.events
 
@@ -131,7 +88,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     return consumerState
   }
 
-  private configureProducer(producer: Producer) : ProducerState {
+  private addListenersToProducer(producer: Producer) : ProducerState {
     const producerState: ProducerState = { producer, status: { healthy: true, ready: false } }
     const { CONNECT, DISCONNECT } = producer.events
 
@@ -142,22 +99,22 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
   }
 
   private atLeastOneConsumerOrProducerIsHealthy(): boolean {
-    return Object.values(this.simpleConsumers).some(consumer => consumer.status.healthy)
-      || Object.values(this.simpleProducers).some(producer => producer.status.healthy)
+    return Object.values(this.consumers).some(consumer => consumer.status.healthy)
+      || Object.values(this.producers).some(producer => producer.status.healthy)
   }
 
   private areAllConsumersAndProducersHealthy(): boolean {
-    return Object.values(this.simpleConsumers).every(consumer => consumer.status.healthy)
-      && Object.values(this.simpleProducers).every(producer => producer.status.healthy)
+    return Object.values(this.consumers).every(consumer => consumer.status.healthy)
+      && Object.values(this.producers).every(producer => producer.status.healthy)
   }
 
   private atLeastOneConsumerOrProducerIsReady(): boolean {
-    return Object.values(this.simpleConsumers).some(consumer => consumer.status.ready)
-      || Object.values(this.simpleProducers).some(producer => producer.status.ready)
+    return Object.values(this.consumers).some(consumer => consumer.status.ready)
+      || Object.values(this.producers).some(producer => producer.status.ready)
   }
 
   private areAllConsumersAndProducersReady(): boolean {
-    return Object.values(this.simpleConsumers).every(consumer => consumer.status.ready)
-      && Object.values(this.simpleProducers).every(producer => producer.status.ready)
+    return Object.values(this.consumers).every(consumer => consumer.status.ready)
+      && Object.values(this.producers).every(producer => producer.status.ready)
   }
 }

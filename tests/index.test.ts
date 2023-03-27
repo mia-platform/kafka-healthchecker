@@ -1,13 +1,69 @@
 import Tap from 'tap'
 import { Kafka } from 'kafkajs'
-import { ConsumerState, ProducerState, KafkaJSStatusUpdater, KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
+import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
+import { ConsumerState, ProducerState } from '../src/lib/types'
+import { KafkaJSStatusUpdater } from '../src/lib/statusUpdater'
 
 Tap.test('Unit tests: ', async t => {
   await t.test('Kafka HealthChecker test', async t => {
-    const kafkaHealthChecker = new KafkaJSHealthChecker()
+    const kafka = new Kafka({
+      clientId: 'test',
+      brokers: ['test-broker'],
+    })
 
-    await t.test('Service is not healthy nor ready with no consumers and producers', async assert => {
+    const firstConsumer = kafka.consumer({ groupId: 'test-group-1' })
+    const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
+    const producer = kafka.producer()
+
+    await t.test('Status is not healthy nor ready with no consumers and producers', async assert => {
+      const kafkaHealthChecker = new KafkaJSHealthChecker()
       assert.notOk(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    await t.test('Status is healthy and not ready at startup - One consumer, no producers', async assert => {
+      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer])
+      assert.ok(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    await t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration', async assert => {
+      const configuration = { checkStatusForAll: false }
+      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer], [], configuration)
+      assert.ok(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    await t.test('Status is healthy and not ready at startup - Two consumers, no producers, with configuration', async assert => {
+      const configuration = { checkStatusForAll: false }
+      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [], configuration)
+
+      assert.ok(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+
+      // await firstConsumer.connect()
+      // await firstConsumer.disconnect()
+
+      // assert.ok(kafkaHealthChecker.isHealthy())
+      // assert.notOk(kafkaHealthChecker.isReady())
+
+      assert.end()
+    })
+
+    await t.test('Status is healthy and not ready at startup - No consumers, one producer', async assert => {
+      const kafkaHealthChecker = new KafkaJSHealthChecker([], [producer])
+      assert.ok(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    await t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration', async assert => {
+      const configuration = { checkStatusForAll: false }
+      const kafkaHealthChecker = new KafkaJSHealthChecker([], [producer], configuration)
+      assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
       assert.end()
     })
@@ -18,7 +74,7 @@ Tap.test('Unit tests: ', async t => {
   await t.test('Status updater test', async t => {
     const kafka = new Kafka({
       clientId: 'test',
-      brokers: ['kafka1:9092', 'kafka2:9092'],
+      brokers: ['test-broker'],
     })
 
     const consumer = kafka.consumer({ groupId: 'test-group' })
