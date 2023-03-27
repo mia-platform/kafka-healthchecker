@@ -2,7 +2,7 @@ import Tap from 'tap'
 import { Kafka } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 
-Tap.test('Integration tests: ', async t => {
+Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health status ', async t => {
   const kafka = new Kafka({
     clientId: 'my-app',
     brokers: ['localhost:9092', 'localhost:9093'],
@@ -12,7 +12,7 @@ Tap.test('Integration tests: ', async t => {
   const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
   const producer = kafka.producer()
 
-  await t.test('KafkaJSHealthChecker returns the correct health status with only one consumer', async assert => {
+  await t.test('One consumer and one producer', async assert => {
     const healthChecker = new KafkaJSHealthChecker([firstConsumer], [producer])
 
     assert.ok(healthChecker.isHealthy())
@@ -38,13 +38,6 @@ Tap.test('Integration tests: ', async t => {
       ],
     })
 
-    await producer.send({
-      topic: 'test-topic-2',
-      messages: [
-        { value: 'test message 2' },
-      ],
-    })
-
     assert.ok(healthChecker.isHealthy())
     assert.ok(healthChecker.isReady())
 
@@ -58,7 +51,7 @@ Tap.test('Integration tests: ', async t => {
     assert.end()
   })
 
-  await t.test('KafkaJSHealthChecker returns the correct health status with two consumers', async assert => {
+  await t.test('Two consumers and one producer', async assert => {
     const healthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer])
 
     assert.ok(healthChecker.isHealthy())
@@ -114,7 +107,7 @@ Tap.test('Integration tests: ', async t => {
     assert.end()
   })
 
-  await t.test('KafkaJSHealthChecker returns the correct health status with two consumers and only one fails with checkStatusForAll false', async assert => {
+  await t.test('Two consumers and one producer - Only one fails with checkStatusForAll false', async assert => {
     const configuration = { checkStatusForAll: false }
 
     const healthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer], configuration)
@@ -132,7 +125,7 @@ Tap.test('Integration tests: ', async t => {
     })
 
     assert.ok(healthChecker.isHealthy())
-    assert.notOk(healthChecker.isReady())
+    assert.ok(healthChecker.isReady())
 
     await secondConsumer.connect()
     await secondConsumer.subscribe({ topic: 'test-topic-2', fromBeginning: true })

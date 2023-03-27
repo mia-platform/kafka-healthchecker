@@ -74,8 +74,8 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
   private statusUpdater = new KafkaJSStatusUpdater()
 
   constructor(
-    consumers: Consumer[] | undefined,
-    producers: Producer[] | undefined,
+    consumers?: Consumer[] | undefined,
+    producers?: Producer[] | undefined,
     configuration?: Configuration | undefined | null
   ) {
     if (configuration) {
@@ -97,21 +97,25 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
   }
 
   isHealthy(): boolean {
-    if (this.configuration.checkStatusForAll) {
-      return Object.values(this.simpleConsumers).every(consumer => consumer.status.healthy)
-    && Object.values(this.simpleProducers).every(producer => producer.status.healthy)
+    if ((this.simpleConsumers.length + this.simpleProducers.length) <= 0) {
+      return false
     }
-    return Object.values(this.simpleConsumers).some(consumer => consumer.status.healthy)
-    && Object.values(this.simpleProducers).some(producer => producer.status.healthy)
+
+    if (this.configuration.checkStatusForAll) {
+      return this.areAllConsumersAndProducersHealthy()
+    }
+    return this.atLeastOneConsumerOrProducerIsHealthy()
   }
 
   isReady(): boolean {
-    if (this.configuration.checkStatusForAll) {
-      return Object.values(this.simpleConsumers).every(consumer => consumer.status.ready)
-    && Object.values(this.simpleProducers).every(producer => producer.status.ready)
+    if ((this.simpleConsumers.length + this.simpleProducers.length) <= 0) {
+      return false
     }
-    return Object.values(this.simpleConsumers).some(consumer => consumer.status.ready)
-    && Object.values(this.simpleProducers).some(producer => producer.status.ready)
+
+    if (this.configuration.checkStatusForAll) {
+      return this.areAllConsumersAndProducersReady()
+    }
+    return this.atLeastOneConsumerOrProducerIsReady()
   }
 
   private configureConsumer(consumer: Consumer) : ConsumerState {
@@ -135,5 +139,25 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     producerState.producer.on(DISCONNECT, () => this.statusUpdater.setProducerDisconnectStatus(producerState))
 
     return producerState
+  }
+
+  private atLeastOneConsumerOrProducerIsHealthy(): boolean {
+    return Object.values(this.simpleConsumers).some(consumer => consumer.status.healthy)
+      || Object.values(this.simpleProducers).some(producer => producer.status.healthy)
+  }
+
+  private areAllConsumersAndProducersHealthy(): boolean {
+    return Object.values(this.simpleConsumers).every(consumer => consumer.status.healthy)
+      && Object.values(this.simpleProducers).every(producer => producer.status.healthy)
+  }
+
+  private atLeastOneConsumerOrProducerIsReady(): boolean {
+    return Object.values(this.simpleConsumers).some(consumer => consumer.status.ready)
+      || Object.values(this.simpleProducers).some(producer => producer.status.ready)
+  }
+
+  private areAllConsumersAndProducersReady(): boolean {
+    return Object.values(this.simpleConsumers).every(consumer => consumer.status.ready)
+      && Object.values(this.simpleProducers).every(producer => producer.status.ready)
   }
 }

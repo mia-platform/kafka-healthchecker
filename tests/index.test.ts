@@ -1,8 +1,20 @@
 import Tap from 'tap'
 import { Kafka } from 'kafkajs'
-import { ConsumerState, ProducerState, KafkaJSStatusUpdater } from '../src/lib/kafkaHealthChecker'
+import { ConsumerState, ProducerState, KafkaJSStatusUpdater, KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 
 Tap.test('Unit tests: ', async t => {
+  await t.test('Kafka HealthChecker test', async t => {
+    const kafkaHealthChecker = new KafkaJSHealthChecker()
+
+    await t.test('Service is not healthy nor ready with no consumers and producers', async assert => {
+      assert.notOk(kafkaHealthChecker.isHealthy())
+      assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    t.end()
+  })
+
   await t.test('Status updater test', async t => {
     const kafka = new Kafka({
       clientId: 'test',
