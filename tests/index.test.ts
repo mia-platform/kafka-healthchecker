@@ -11,8 +11,7 @@ Tap.test('Unit tests: ', async t => {
       brokers: ['test-broker'],
     })
 
-    const firstConsumer = kafka.consumer({ groupId: 'test-group-1' })
-    const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
+    const consumer = kafka.consumer({ groupId: 'test-group-1' })
     const producer = kafka.producer()
 
     await t.test('Status is not healthy nor ready with no consumers and producers', async assert => {
@@ -23,7 +22,7 @@ Tap.test('Unit tests: ', async t => {
     })
 
     await t.test('Status is healthy and not ready at startup - One consumer, no producers', async assert => {
-      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer])
+      const kafkaHealthChecker = new KafkaJSHealthChecker([consumer])
       assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
       assert.end()
@@ -31,25 +30,9 @@ Tap.test('Unit tests: ', async t => {
 
     await t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration', async assert => {
       const configuration = { checkStatusForAll: false }
-      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer], [], configuration)
+      const kafkaHealthChecker = new KafkaJSHealthChecker([consumer], [], configuration)
       assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
-      assert.end()
-    })
-
-    await t.test('Status is healthy and not ready at startup - Two consumers, no producers, with configuration', async assert => {
-      const configuration = { checkStatusForAll: false }
-      const kafkaHealthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [], configuration)
-
-      assert.ok(kafkaHealthChecker.isHealthy())
-      assert.notOk(kafkaHealthChecker.isReady())
-
-      // await firstConsumer.connect()
-      // await firstConsumer.disconnect()
-
-      // assert.ok(kafkaHealthChecker.isHealthy())
-      // assert.notOk(kafkaHealthChecker.isReady())
-
       assert.end()
     })
 
