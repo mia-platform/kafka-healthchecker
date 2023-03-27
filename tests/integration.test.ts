@@ -1,11 +1,12 @@
 import Tap from 'tap'
-import { Kafka } from 'kafkajs'
+import { Kafka, logLevel } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 
 Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health status ', async t => {
   const kafka = new Kafka({
     clientId: 'my-app',
     brokers: ['localhost:9092', 'localhost:9093'],
+    logLevel: logLevel.ERROR,
   })
 
   const firstConsumer = kafka.consumer({ groupId: 'test-group' })
