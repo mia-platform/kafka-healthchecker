@@ -93,7 +93,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Set consumer crash status', assert => {
+    t.test('Set consumer crash status - event exists', assert => {
       const event = {
         payload: {
           restart: true,
@@ -103,6 +103,16 @@ Tap.test('Unit tests: ', t => {
       assert.equal(
         JSON.stringify(consumerState.status),
         JSON.stringify({ healthy: event.payload.restart, ready: false })
+      )
+      assert.end()
+    })
+
+    t.test('Set consumer crash status - event does not exist', assert => {
+      const event = {}
+      statusUpdater.setConsumerCrashStatus(consumerState, event)
+      assert.equal(
+        JSON.stringify(consumerState.status),
+        JSON.stringify({ healthy: false, ready: false })
       )
       assert.end()
     })
