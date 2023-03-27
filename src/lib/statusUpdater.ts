@@ -31,7 +31,7 @@ export class KafkaJSStatusUpdater {
     consumerState.status = { healthy: false, ready: false }
   }
   setConsumerCrashStatus(consumerState: ConsumerState, event: any): void {
-    consumerState.status = { healthy: event.payload.restart, ready: false }
+    consumerState.status = { healthy: event?.payload?.restart || false, ready: false }
   }
 
   // producer

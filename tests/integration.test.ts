@@ -21,7 +21,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('One consumer and no producers', async assert => {
+  await t.test('One consumer and no producers - CONNECT, GROUP_JOIN, DISCONNECT', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([firstConsumer])
 
@@ -43,6 +43,34 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     await firstConsumer.disconnect()
 
     assert.notOk(healthChecker.isHealthy())
+    assert.notOk(healthChecker.isReady())
+
+    await kafkaTeardown(kafka, ['test-topic', 'test-topic-2'])
+    assert.end()
+  })
+
+  await t.test('One consumer and no producers - CONNECT, GROUP_JOIN, STOP', async assert => {
+    await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
+    const healthChecker = new KafkaJSHealthChecker([firstConsumer])
+
+    assert.ok(healthChecker.isHealthy())
+    assert.notOk(healthChecker.isReady())
+
+    await firstConsumer.connect()
+    await firstConsumer.subscribe({ topic: 'test-topic', fromBeginning: true })
+
+    await firstConsumer.run({
+      eachMessage: async({ message }) => {
+        assert.equal(message?.value?.toString(), 'test message')
+      },
+    })
+
+    assert.ok(healthChecker.isHealthy())
+    assert.ok(healthChecker.isReady())
+
+    await firstConsumer.stop()
+
+    assert.ok(healthChecker.isHealthy())
     assert.notOk(healthChecker.isReady())
 
     await kafkaTeardown(kafka, ['test-topic', 'test-topic-2'])
