@@ -16,59 +16,71 @@ This library helps to handle Kafka healthiness and readiness probes.
 npm i --save @mia-platform/kafka-healthchecker
 ```
 
-## Testing locally
+## Description
+The library takes in input a list of Kafka *consumers*, a list of Kafka *producers* and a configuration object.
 
-#### Create a network connection
+It configures each consumer and producer in order to assign them an internal status that is updated as a result of Kafka events. Then, it exposes two methods:
+- `isHealthy()`: returns true if all the consumers and producers are healthy (i.e. they are live)
+- `isReady()`: returns true if all the consumers and producers are ready (i.e. they are able to consume and produce messages)
 
-```
-docker network create app --driver bridge
-```
+### Consumer
+It follows a table of all the status of the consumers caused by Kafka events. The starting status is `{ healthy: true, ready: false }`.
 
-#### Pull the images
-```
-docker pull bitnami/zookeeper
-docker pull bitnami/kafka
-```
+| Event | Status |
+| ----------- | ----------- |
+| CONNECT | `{ healthy: true, ready: false }` |
+| GROUP_JOIN | `{ healthy: true, ready: true }` |
+| STOP   | `{ healthy: true, ready: false }` |
+| DISCONNECT | `{ healthy: false, ready: false }` |
+| CRASH | `{ healthy: false, ready: false }` |
 
-#### Run the images
-```
-docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
+### Producer
+It follows a table of all the status of the producers caused by Kafka events. The starting status is `{ healthy: true, ready: false }`.
 
-docker run --rm \
-  --network app \
-  --name=kafka \
-  -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 \
-  -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' \
-  -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' \
-  -e KAFKA_CFG_LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' \
-  -e KAFKA_INTER_BROKER_LISTENER_NAME='INTERNAL' \
-  -e ALLOW_PLAINTEXT_LISTENER=yes \
-  -p 2181:2181 \
-  -p 443:9092 \
-  -p 9092:9092 \
-  -p 9093:9093 \
-  bitnami/kafka
-```
+| Event | Status |
+| ----------- | ----------- |
+| CONNECT | `{ healthy: true, ready: false }` |
+| DISCONNECT | `{ healthy: false, ready: false }` |
 
-#### Run tests
-
-```
-npm test
-```
-
-## Configuration
-
-The library takes in input a list of consumers and producers and a configuration. It adds listeners on all the objects and returns two methods to handle Kafka probes: `isHealthy()` and `isReady()`.
-
-At the moment the library exposes the health checker only for [KafkaJS](https://kafka.js.org/). It is recommended to have read its documentation in case some parameter or configuration is not clear.
-
-Below are reported the configuration and an usage example:
+### Configuration
+The configuration objects has the following schema:
 
 ```javascript
 configuration = {
   checkStatusForAll: { type: 'boolean', default: true }
 }
 ```
+The `checkStatusForAll` can be:
+- `true`: the methods `isHealthy` and `isReady` return true if all the consumers and producers are, respectively, healthy and ready
+- `false`: the methods `isHealthy` and `isReady` return true if exists at least one consumer or producer that is, respectively, healthy and ready.
+
+## Usage
+
+### Quick start
+After the insallation
+Example:
+
+```javascript
+const { Kafka } = require('kafkajs')
+const { KafkaHealthChecker } = require('@mia-platform/kafka-healthchecker')
+
+const kafka = new Kafka({
+    clientId: 'my-app',
+    brokers: ['localhost:9092', 'localhost:9093'],
+})
+
+const consumer = kafka.consumer({ groupId: 'test-group-1' })
+
+const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer])
+```
+
+### Advanced
+
+The library takes in input a list of consumers and producers and a configuration. It adds listeners on all the objects and returns two methods to handle Kafka probes: `isHealthy()` and `isReady()`.
+
+At the moment the library exposes the health checker only for [KafkaJS](https://kafka.js.org/). It is recommended to have read its documentation in case some parameter or configuration is not clear.
+
+Below are reported the configuration and an usage example:
 
 Example:
 
@@ -87,7 +99,7 @@ const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
 const producer = kafka.producer()
 const configuration = { checkStatusForAll: true }
 
-const { isHealthy, isReady } = new KafkaHealthChecker([firstConsumer, secondConsumer], [producer], configuration)
+const { isHealthy, isReady } = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer], configuration)
 
 async function healthinessHandler() {
   return { statusOK: isHealthy() }
@@ -101,13 +113,31 @@ module.exports.healthinessHandler = healthinessHandler
 module.exports.readinessHandler = readinessHandler
 ```
 
-## Library Methods
+## Testing locally
 
-#### `isHealthy()`
-_isHealthy_ provides the health status of consumers and producers. 
+#### Create a network connection
 
-#### `isReady()`
-_isReady_ provides the running status of consumers and producers.
+```
+docker network create app --driver bridge
+```
+
+#### Run the image
+```
+docker run -d --name=kafka --rm --network app -p 8081:8081 -p 8082:8082 -p 9092:9092 -p 9644:9644 docker.redpanda.com/vectorized/redpanda:latest redpanda start --overprovisioned --smp 1  --memory 1G --reserve-memory 0M --node-id 0 --check=false
+```
+
+#### Run tests
+
+```
+npm test
+```
+
+## Contributing
+To contribute to the project, please be mindful for this simple rules:
+1. Don’t commit directly on `main`
+2. Start your branches with `feature/` or `fix/` based on the content of the branch
+3. Always commit in english
+4. Once you are happy with your branch, open a [Pull Request][pull-request]
 
 [standard-mia-svg]: https://img.shields.io/badge/code_style-standard--mia-orange.svg
 [standard-mia]: https://github.com/mia-platform/eslint-config-mia
@@ -117,3 +147,5 @@ _isReady_ provides the running status of consumers and producers.
 
 [github-actions-svg]: https://github.com/mia-platform/flow-manager-client/actions/workflows/node.js.yml/badge.svg
 [github-actions]: https://github.com/mia-platform/kafka-healthchecker/actions
+
+[pull-request]: https://github.com/mia-platform/kafka-healthchecker/pulls
