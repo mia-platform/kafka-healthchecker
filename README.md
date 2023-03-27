@@ -10,18 +10,27 @@
 
 This library helps to handle Kafka healthiness and readiness probes.
 
-## Installation
+## Table of contents
+1. [Installation](#installation)
+2. [Description](#description)
+3. [Usage](#usage)
+4. [Testing](#testing)
+5. [Contributing](#contributing)
+
+## Installation <a name="installation"></a>
 
 ```
 npm i --save @mia-platform/kafka-healthchecker
 ```
 
-## Description
+## Description <a name="description"></a>
 The library takes in input a list of Kafka *consumers*, a list of Kafka *producers* and a configuration object.
 
 It configures each consumer and producer in order to assign them an internal status that is updated as a result of Kafka events. Then, it exposes two methods:
 - `isHealthy()`: returns true if all the consumers and producers are healthy (i.e. they are live)
 - `isReady()`: returns true if all the consumers and producers are ready (i.e. they are able to consume and produce messages)
+
+At the moment the library exposes the health checker only for [KafkaJS](https://kafka.js.org/). It is recommended to have read its documentation in case some parameter or configuration is not clear.
 
 ### Consumer
 It follows a table of all the status of the consumers caused by Kafka events. The starting status is `{ healthy: true, ready: false }`.
@@ -54,10 +63,11 @@ The `checkStatusForAll` can be:
 - `true`: the methods `isHealthy` and `isReady` return true if all the consumers and producers are, respectively, healthy and ready
 - `false`: the methods `isHealthy` and `isReady` return true if exists at least one consumer or producer that is, respectively, healthy and ready.
 
-## Usage
+## Usage <a name="usage"></a>
 
 ### Quick start
-After the insallation
+After the installation, you can import the library, create the `KafkaJSHealthChecker` object passing it one (or more) consumer or producer to get the methods `isHealthy` and `isReady`.
+
 Example:
 
 ```javascript
@@ -75,12 +85,10 @@ const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer])
 ```
 
 ### Advanced
-
-The library takes in input a list of consumers and producers and a configuration. It adds listeners on all the objects and returns two methods to handle Kafka probes: `isHealthy()` and `isReady()`.
-
-At the moment the library exposes the health checker only for [KafkaJS](https://kafka.js.org/). It is recommended to have read its documentation in case some parameter or configuration is not clear.
-
-Below are reported the configuration and an usage example:
+The library takes in input 3 parameters:
+- a list of consumers
+- a list of producers
+- a configuration object to determine if all the consumers and producers have to be considered during the `isHealthy` and `isReady` methods.
 
 Example:
 
@@ -113,26 +121,26 @@ module.exports.healthinessHandler = healthinessHandler
 module.exports.readinessHandler = readinessHandler
 ```
 
-## Testing locally
+## Testing <a name="testing"></a>
 
-#### Create a network connection
+Create a network connection
 
 ```
 docker network create app --driver bridge
 ```
 
-#### Run the image
+Run the image
 ```
 docker run -d --name=kafka --rm --network app -p 8081:8081 -p 8082:8082 -p 9092:9092 -p 9644:9644 docker.redpanda.com/vectorized/redpanda:latest redpanda start --overprovisioned --smp 1  --memory 1G --reserve-memory 0M --node-id 0 --check=false
 ```
 
-#### Run tests
+Run tests
 
 ```
 npm test
 ```
 
-## Contributing
+## Contributing <a name="contributing"></a>
 To contribute to the project, please be mindful for this simple rules:
 1. Don’t commit directly on `main`
 2. Start your branches with `feature/` or `fix/` based on the content of the branch
