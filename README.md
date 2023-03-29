@@ -93,6 +93,8 @@ The library takes in input 3 parameters:
 - a list of producers
 - a configuration object to determine if all the consumers and producers have to be considered during the `isHealthy` and `isReady` methods.
 
+Consumers and producers must be passed to the library before their connection to Kafka.
+
 Example:
 
 ```javascript
