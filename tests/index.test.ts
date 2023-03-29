@@ -2,7 +2,6 @@ import Tap from 'tap'
 import { Kafka, logLevel, ConsumerCrashEvent } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 import { ConsumerState, ProducerState } from '../src/lib/types'
-import { KafkaJSStatusUpdater } from '../src/lib/statusUpdater'
 
 Tap.test('Unit tests: ', t => {
   t.test('Kafka HealthChecker test', t => {
@@ -55,7 +54,7 @@ Tap.test('Unit tests: ', t => {
     t.end()
   })
 
-  t.test('Status updater test', t => {
+  t.test('Status update test ', t => {
     const kafka = new Kafka({
       clientId: 'test',
       brokers: ['test-broker'],
@@ -65,35 +64,38 @@ Tap.test('Unit tests: ', t => {
     const consumer = kafka.consumer({ groupId: 'test-group' })
     const producer = kafka.producer()
 
-    const consumerState: ConsumerState = { consumer, status: { healthy: true, ready: false } }
-    const producerState: ProducerState = { producer, status: { healthy: true, ready: false } }
-    const statusUpdater = new KafkaJSStatusUpdater()
+    const consumerState = new ConsumerState(consumer)
+    const producerState = new ProducerState(producer)
 
     t.test('Set consumer connect status', assert => {
-      statusUpdater.setConsumerConnectStatus(consumerState)
-      assert.equal(JSON.stringify(consumerState.status), JSON.stringify({ healthy: true, ready: false }))
+      consumerState.setConsumerConnectStatus()
+      assert.equal(consumerState.getHealthyStatus(), true)
+      assert.equal(consumerState.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set consumer group join status', assert => {
-      statusUpdater.setConsumerGroupJoinStatus(consumerState)
-      assert.equal(JSON.stringify(consumerState.status), JSON.stringify({ healthy: true, ready: true }))
+      consumerState.setConsumerGroupJoinStatus()
+      assert.equal(consumerState.getHealthyStatus(), true)
+      assert.equal(consumerState.getReadyStatus(), true)
       assert.end()
     })
 
     t.test('Set consumer stop status', assert => {
-      statusUpdater.setConsumerStopStatus(consumerState)
-      assert.equal(JSON.stringify(consumerState.status), JSON.stringify({ healthy: true, ready: false }))
+      consumerState.setConsumerStopStatus()
+      assert.equal(consumerState.getHealthyStatus(), true)
+      assert.equal(consumerState.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set consumer disconnect status', assert => {
-      statusUpdater.setConsumerDisconnectStatus(consumerState)
-      assert.equal(JSON.stringify(consumerState.status), JSON.stringify({ healthy: false, ready: false }))
+      consumerState.setConsumerDisconnectStatus()
+      assert.equal(consumerState.getHealthyStatus(), false)
+      assert.equal(consumerState.getReadyStatus(), false)
       assert.end()
     })
 
-    t.test('Set consumer crash status - event exists', assert => {
+    t.test('Set consumer crash status - event has restart true', assert => {
       const event : ConsumerCrashEvent = {
         type: 'CRASH',
         payload: {
@@ -104,15 +106,13 @@ Tap.test('Unit tests: ', t => {
         id: 'test-id',
         timestamp: 1680074273,
       }
-      statusUpdater.setConsumerCrashStatus(consumerState, event)
-      assert.equal(
-        JSON.stringify(consumerState.status),
-        JSON.stringify({ healthy: true, ready: false })
-      )
+      consumerState.setConsumerCrashStatus(event)
+      assert.equal(consumerState.getHealthyStatus(), event.payload.restart)
+      assert.equal(consumerState.getReadyStatus(), false)
       assert.end()
     })
 
-    t.test('Set consumer crash status - event does not exist', assert => {
+    t.test('Set consumer crash status - event has restart false', assert => {
       const event : ConsumerCrashEvent = {
         type: 'CRASH',
         payload: {
@@ -123,23 +123,23 @@ Tap.test('Unit tests: ', t => {
         id: 'test-id',
         timestamp: 1680074273,
       }
-      statusUpdater.setConsumerCrashStatus(consumerState, event)
-      assert.equal(
-        JSON.stringify(consumerState.status),
-        JSON.stringify({ healthy: false, ready: false })
-      )
+      consumerState.setConsumerCrashStatus(event)
+      assert.equal(consumerState.getHealthyStatus(), event.payload.restart)
+      assert.equal(consumerState.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set producer connect status', assert => {
-      statusUpdater.setProducerConnectStatus(producerState)
-      assert.equal(JSON.stringify(producerState.status), JSON.stringify({ healthy: true, ready: true }))
+      producerState.setProducerConnectStatus()
+      assert.equal(producerState.getHealthyStatus(), true)
+      assert.equal(producerState.getReadyStatus(), true)
       assert.end()
     })
 
     t.test('Set producer disconnect status', assert => {
-      statusUpdater.setProducerDisconnectStatus(producerState)
-      assert.equal(JSON.stringify(producerState.status), JSON.stringify({ healthy: false, ready: false }))
+      producerState.setProducerDisconnectStatus()
+      assert.equal(producerState.getHealthyStatus(), false)
+      assert.equal(producerState.getReadyStatus(), false)
       assert.end()
     })
 

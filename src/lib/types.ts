@@ -14,23 +14,77 @@
  * limitations under the License.
  */
 
-import { Consumer, Producer } from 'kafkajs'
+import { Consumer, Producer, ConsumerCrashEvent } from 'kafkajs'
 
 export type Status = {
     healthy: boolean,
     ready: boolean
 }
 
-export type ConsumerState = {
-    consumer: Consumer,
-    status: Status
-}
-
-export type ProducerState = {
-    producer: Producer,
-    status: Status
-}
-
 export type Configuration = {
-  checkStatusForAll: boolean
+    checkStatusForAll: boolean
+}
+
+export interface ClientState {
+    getHealthyStatus(): boolean
+    getReadyStatus(): boolean
+}
+
+export class ConsumerState implements ClientState {
+  private consumer: Consumer
+  private status: Status
+
+  constructor(consumer: Consumer) {
+    this.consumer = consumer
+    this.status = { healthy: true, ready: false }
+  }
+
+  setConsumerConnectStatus(): void {
+    this.status = { healthy: true, ready: false }
+  }
+  setConsumerGroupJoinStatus(): void {
+    this.status = { healthy: true, ready: true }
+  }
+  setConsumerStopStatus(): void {
+    this.status = { healthy: true, ready: false }
+  }
+  setConsumerDisconnectStatus(): void {
+    this.status = { healthy: false, ready: false }
+  }
+  setConsumerCrashStatus(event: ConsumerCrashEvent): void {
+    this.status = { healthy: event?.payload?.restart || false, ready: false }
+  }
+
+  getHealthyStatus(): boolean {
+    return this.status.healthy
+  }
+
+  getReadyStatus(): boolean {
+    return this.status.ready
+  }
+}
+
+export class ProducerState implements ClientState {
+  private producer: Producer
+  private status: Status
+
+  constructor(producer: Producer) {
+    this.producer = producer
+    this.status = { healthy: true, ready: false }
+  }
+
+  setProducerConnectStatus(): void {
+    this.status = { healthy: true, ready: true }
+  }
+  setProducerDisconnectStatus(): void {
+    this.status = { healthy: false, ready: false }
+  }
+
+  getHealthyStatus(): boolean {
+    return this.status.healthy
+  }
+
+  getReadyStatus(): boolean {
+    return this.status.ready
+  }
 }

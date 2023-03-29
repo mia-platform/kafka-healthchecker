@@ -13,7 +13,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
   const secondConsumer = kafka.consumer({ groupId: 'test-group-2' })
   const producer = kafka.producer()
 
-  await t.test('No consumers and no producers', async assert => {
+  await t.test('No consumers - No producers', async assert => {
     const healthChecker = new KafkaJSHealthChecker()
 
     assert.notOk(healthChecker.isHealthy())
@@ -21,7 +21,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('One consumer and no producers - CONNECT, GROUP_JOIN, DISCONNECT', async assert => {
+  await t.test('One consumer (CONNECT, GROUP_JOIN, DISCONNECT) - No producers', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([firstConsumer])
 
@@ -49,7 +49,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('One consumer and no producers - CONNECT, GROUP_JOIN, STOP', async assert => {
+  await t.test('One consumer (CONNECT, GROUP_JOIN, STOP) - No producers', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([firstConsumer])
 
@@ -77,7 +77,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('No consumers and one producer', async assert => {
+  await t.test('No consumers - One producer (CONNECT, DISCONNECT)', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([], [producer])
 
@@ -104,7 +104,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('One consumer and one producer', async assert => {
+  await t.test('One consumer (CONNECT, GROUP_JOIN, DISCONNECT) - One producer (CONNECT, DISCONNECT)', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([firstConsumer], [producer])
 
@@ -144,7 +144,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('Two consumers and one producer', async assert => {
+  await t.test('Two consumers (CONNECT, GROUP_JOIN, DISCONNECT) - One producer (CONNECT, DISCONNECT)', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const healthChecker = new KafkaJSHealthChecker([firstConsumer, secondConsumer], [producer])
 
@@ -201,7 +201,7 @@ Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health sta
     assert.end()
   })
 
-  await t.test('Two consumers and one producer - Only one fails with checkStatusForAll false', async assert => {
+  await t.test('Two consumers (CONNECT, GROUP_JOIN, DISCONNECT) - One producer (CONNECT, DISCONNECT) - Only one consumer fails with checkStatusForAll false', async assert => {
     await kafkaSetup(kafka, ['test-topic', 'test-topic-2'])
     const configuration = { checkStatusForAll: false }
 

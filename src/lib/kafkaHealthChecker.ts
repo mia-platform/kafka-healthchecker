@@ -15,8 +15,7 @@
  */
 
 import { Consumer, Producer } from 'kafkajs'
-import { KafkaJSStatusUpdater } from './statusUpdater'
-import { ConsumerState, ProducerState, Configuration } from './types'
+import { ClientState, ConsumerState, ProducerState, Configuration } from './types'
 
 interface KafkaHealthChecker {
   isHealthy() : boolean
@@ -24,10 +23,8 @@ interface KafkaHealthChecker {
 }
 
 export class KafkaJSHealthChecker implements KafkaHealthChecker {
-  private consumers: ConsumerState[] = []
-  private producers: ProducerState[] = []
+  private states: ClientState[] = []
   private configuration: Configuration = { checkStatusForAll: true }
-  private statusUpdater = new KafkaJSStatusUpdater()
 
   constructor(
     consumers?: Consumer[] | undefined,
@@ -40,21 +37,21 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
 
     if (consumers) {
       consumers.forEach(consumer => {
-        const simpleConsumer = this.addListenersToConsumer(consumer)
-        this.consumers.push(simpleConsumer)
+        const consumerState = this.addListenersToConsumer(consumer)
+        this.states.push(consumerState)
       })
     }
 
     if (producers) {
       producers.forEach(producer => {
-        const simpleProducer = this.addListenersToProducer(producer)
-        this.producers.push(simpleProducer)
+        const producerState = this.addListenersToProducer(producer)
+        this.states.push(producerState)
       })
     }
   }
 
   isHealthy(): boolean {
-    if ((this.consumers.length + this.producers.length) <= 0) {
+    if (this.states.length <= 0) {
       return false
     }
 
@@ -65,7 +62,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
   }
 
   isReady(): boolean {
-    if ((this.consumers.length + this.producers.length) <= 0) {
+    if (this.states.length <= 0) {
       return false
     }
 
@@ -75,46 +72,42 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     return this.atLeastOneConsumerOrProducerIsReady()
   }
 
-  private addListenersToConsumer(consumer: Consumer) : ConsumerState {
-    const consumerState: ConsumerState = { consumer, status: { healthy: true, ready: false } }
+  private addListenersToConsumer(consumer: Consumer) : ClientState {
     const { CONNECT, GROUP_JOIN, DISCONNECT, CRASH, STOP } = consumer.events
+    const consumerState = new ConsumerState(consumer)
 
-    consumerState.consumer.on(CONNECT, () => this.statusUpdater.setConsumerConnectStatus(consumerState))
-    consumerState.consumer.on(GROUP_JOIN, () => this.statusUpdater.setConsumerGroupJoinStatus(consumerState))
-    consumerState.consumer.on(STOP, () => this.statusUpdater.setConsumerStopStatus(consumerState))
-    consumerState.consumer.on(DISCONNECT, () => this.statusUpdater.setConsumerDisconnectStatus(consumerState))
-    consumerState.consumer.on(CRASH, (event: any) => this.statusUpdater.setConsumerCrashStatus(consumerState, event))
+    consumer.on(CONNECT, () => consumerState.setConsumerConnectStatus())
+    consumer.on(GROUP_JOIN, () => consumerState.setConsumerGroupJoinStatus())
+    consumer.on(STOP, () => consumerState.setConsumerStopStatus())
+    consumer.on(DISCONNECT, () => consumerState.setConsumerDisconnectStatus())
+    consumer.on(CRASH, (event: any) => consumerState.setConsumerCrashStatus(event))
 
     return consumerState
   }
 
   private addListenersToProducer(producer: Producer) : ProducerState {
-    const producerState: ProducerState = { producer, status: { healthy: true, ready: false } }
     const { CONNECT, DISCONNECT } = producer.events
+    const producerState = new ProducerState(producer)
 
-    producerState.producer.on(CONNECT, () => this.statusUpdater.setProducerConnectStatus(producerState))
-    producerState.producer.on(DISCONNECT, () => this.statusUpdater.setProducerDisconnectStatus(producerState))
+    producer.on(CONNECT, () => producerState.setProducerConnectStatus())
+    producer.on(DISCONNECT, () => producerState.setProducerDisconnectStatus())
 
     return producerState
   }
 
   private atLeastOneConsumerOrProducerIsHealthy(): boolean {
-    return Object.values(this.consumers).some(consumer => consumer.status.healthy)
-      || Object.values(this.producers).some(producer => producer.status.healthy)
+    return Object.values(this.states).some(state => state.getHealthyStatus())
   }
 
   private areAllConsumersAndProducersHealthy(): boolean {
-    return Object.values(this.consumers).every(consumer => consumer.status.healthy)
-      && Object.values(this.producers).every(producer => producer.status.healthy)
+    return Object.values(this.states).every(state => state.getHealthyStatus())
   }
 
   private atLeastOneConsumerOrProducerIsReady(): boolean {
-    return Object.values(this.consumers).some(consumer => consumer.status.ready)
-      || Object.values(this.producers).some(producer => producer.status.ready)
+    return Object.values(this.states).some(state => state.getReadyStatus())
   }
 
   private areAllConsumersAndProducersReady(): boolean {
-    return Object.values(this.consumers).every(consumer => consumer.status.ready)
-      && Object.values(this.producers).every(producer => producer.status.ready)
+    return Object.values(this.states).every(state => state.getReadyStatus())
   }
 }
