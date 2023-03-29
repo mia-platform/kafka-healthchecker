@@ -15,7 +15,7 @@
  */
 
 import { Consumer, Producer } from 'kafkajs'
-import { ClientState, ConsumerState, ProducerState, Configuration } from './types'
+import { ClientStatus, KafkaJSConsumer, KafkaJSProducer, Configuration } from './types'
 
 interface KafkaHealthChecker {
   isHealthy() : boolean
@@ -23,7 +23,7 @@ interface KafkaHealthChecker {
 }
 
 export class KafkaJSHealthChecker implements KafkaHealthChecker {
-  private states: ClientState[] = []
+  private states: ClientStatus[] = []
   private configuration: Configuration = { checkStatusForAll: true }
 
   constructor(
@@ -37,15 +37,13 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
 
     if (consumers) {
       consumers.forEach(consumer => {
-        const consumerState = this.addListenersToConsumer(consumer)
-        this.states.push(consumerState)
+        this.states.push(new KafkaJSConsumer(consumer))
       })
     }
 
     if (producers) {
       producers.forEach(producer => {
-        const producerState = this.addListenersToProducer(producer)
-        this.states.push(producerState)
+        this.states.push(new KafkaJSProducer(producer))
       })
     }
   }
@@ -70,29 +68,6 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
       return this.areAllConsumersAndProducersReady()
     }
     return this.atLeastOneConsumerOrProducerIsReady()
-  }
-
-  private addListenersToConsumer(consumer: Consumer) : ClientState {
-    const { CONNECT, GROUP_JOIN, DISCONNECT, CRASH, STOP } = consumer.events
-    const consumerState = new ConsumerState(consumer)
-
-    consumer.on(CONNECT, () => consumerState.setConsumerConnectStatus())
-    consumer.on(GROUP_JOIN, () => consumerState.setConsumerGroupJoinStatus())
-    consumer.on(STOP, () => consumerState.setConsumerStopStatus())
-    consumer.on(DISCONNECT, () => consumerState.setConsumerDisconnectStatus())
-    consumer.on(CRASH, (event: any) => consumerState.setConsumerCrashStatus(event))
-
-    return consumerState
-  }
-
-  private addListenersToProducer(producer: Producer) : ProducerState {
-    const { CONNECT, DISCONNECT } = producer.events
-    const producerState = new ProducerState(producer)
-
-    producer.on(CONNECT, () => producerState.setProducerConnectStatus())
-    producer.on(DISCONNECT, () => producerState.setProducerDisconnectStatus())
-
-    return producerState
   }
 
   private atLeastOneConsumerOrProducerIsHealthy(): boolean {

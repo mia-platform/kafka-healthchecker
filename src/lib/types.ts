@@ -25,18 +25,30 @@ export type Configuration = {
     checkStatusForAll: boolean
 }
 
-export interface ClientState {
+export interface ClientStatus {
     getHealthyStatus(): boolean
     getReadyStatus(): boolean
 }
 
-export class ConsumerState implements ClientState {
+export class KafkaJSConsumer implements ClientStatus {
   private consumer: Consumer
   private status: Status
 
   constructor(consumer: Consumer) {
     this.consumer = consumer
     this.status = { healthy: true, ready: false }
+
+    this.addListenersToConsumer()
+  }
+
+  private addListenersToConsumer() {
+    const { CONNECT, GROUP_JOIN, DISCONNECT, CRASH, STOP } = this.consumer.events
+
+    this.consumer.on(CONNECT, () => this.setConsumerConnectStatus())
+    this.consumer.on(GROUP_JOIN, () => this.setConsumerGroupJoinStatus())
+    this.consumer.on(STOP, () => this.setConsumerStopStatus())
+    this.consumer.on(DISCONNECT, () => this.setConsumerDisconnectStatus())
+    this.consumer.on(CRASH, (event: any) => this.setConsumerCrashStatus(event))
   }
 
   setConsumerConnectStatus(): void {
@@ -64,13 +76,22 @@ export class ConsumerState implements ClientState {
   }
 }
 
-export class ProducerState implements ClientState {
+export class KafkaJSProducer implements ClientStatus {
   private producer: Producer
   private status: Status
 
   constructor(producer: Producer) {
     this.producer = producer
     this.status = { healthy: true, ready: false }
+
+    this.addListenersToProducer()
+  }
+
+  private addListenersToProducer() {
+    const { CONNECT, DISCONNECT } = this.producer.events
+
+    this.producer.on(CONNECT, () => this.setProducerConnectStatus())
+    this.producer.on(DISCONNECT, () => this.setProducerDisconnectStatus())
   }
 
   setProducerConnectStatus(): void {

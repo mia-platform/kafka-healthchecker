@@ -1,7 +1,7 @@
 import Tap from 'tap'
 import { Kafka, logLevel, ConsumerCrashEvent } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
-import { ConsumerState, ProducerState } from '../src/lib/types'
+import { KafkaJSConsumer, KafkaJSProducer } from '../src/lib/types'
 
 Tap.test('Unit tests: ', t => {
   t.test('Kafka HealthChecker test', t => {
@@ -64,34 +64,34 @@ Tap.test('Unit tests: ', t => {
     const consumer = kafka.consumer({ groupId: 'test-group' })
     const producer = kafka.producer()
 
-    const consumerState = new ConsumerState(consumer)
-    const producerState = new ProducerState(producer)
+    const kafkaConsumer = new KafkaJSConsumer(consumer)
+    const kafkaProducer = new KafkaJSProducer(producer)
 
     t.test('Set consumer connect status', assert => {
-      consumerState.setConsumerConnectStatus()
-      assert.equal(consumerState.getHealthyStatus(), true)
-      assert.equal(consumerState.getReadyStatus(), false)
+      kafkaConsumer.setConsumerConnectStatus()
+      assert.equal(kafkaConsumer.getHealthyStatus(), true)
+      assert.equal(kafkaConsumer.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set consumer group join status', assert => {
-      consumerState.setConsumerGroupJoinStatus()
-      assert.equal(consumerState.getHealthyStatus(), true)
-      assert.equal(consumerState.getReadyStatus(), true)
+      kafkaConsumer.setConsumerGroupJoinStatus()
+      assert.equal(kafkaConsumer.getHealthyStatus(), true)
+      assert.equal(kafkaConsumer.getReadyStatus(), true)
       assert.end()
     })
 
     t.test('Set consumer stop status', assert => {
-      consumerState.setConsumerStopStatus()
-      assert.equal(consumerState.getHealthyStatus(), true)
-      assert.equal(consumerState.getReadyStatus(), false)
+      kafkaConsumer.setConsumerStopStatus()
+      assert.equal(kafkaConsumer.getHealthyStatus(), true)
+      assert.equal(kafkaConsumer.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set consumer disconnect status', assert => {
-      consumerState.setConsumerDisconnectStatus()
-      assert.equal(consumerState.getHealthyStatus(), false)
-      assert.equal(consumerState.getReadyStatus(), false)
+      kafkaConsumer.setConsumerDisconnectStatus()
+      assert.equal(kafkaConsumer.getHealthyStatus(), false)
+      assert.equal(kafkaConsumer.getReadyStatus(), false)
       assert.end()
     })
 
@@ -106,9 +106,9 @@ Tap.test('Unit tests: ', t => {
         id: 'test-id',
         timestamp: 1680074273,
       }
-      consumerState.setConsumerCrashStatus(event)
-      assert.equal(consumerState.getHealthyStatus(), event.payload.restart)
-      assert.equal(consumerState.getReadyStatus(), false)
+      kafkaConsumer.setConsumerCrashStatus(event)
+      assert.equal(kafkaConsumer.getHealthyStatus(), event.payload.restart)
+      assert.equal(kafkaConsumer.getReadyStatus(), false)
       assert.end()
     })
 
@@ -123,23 +123,23 @@ Tap.test('Unit tests: ', t => {
         id: 'test-id',
         timestamp: 1680074273,
       }
-      consumerState.setConsumerCrashStatus(event)
-      assert.equal(consumerState.getHealthyStatus(), event.payload.restart)
-      assert.equal(consumerState.getReadyStatus(), false)
+      kafkaConsumer.setConsumerCrashStatus(event)
+      assert.equal(kafkaConsumer.getHealthyStatus(), event.payload.restart)
+      assert.equal(kafkaConsumer.getReadyStatus(), false)
       assert.end()
     })
 
     t.test('Set producer connect status', assert => {
-      producerState.setProducerConnectStatus()
-      assert.equal(producerState.getHealthyStatus(), true)
-      assert.equal(producerState.getReadyStatus(), true)
+      kafkaProducer.setProducerConnectStatus()
+      assert.equal(kafkaProducer.getHealthyStatus(), true)
+      assert.equal(kafkaProducer.getReadyStatus(), true)
       assert.end()
     })
 
     t.test('Set producer disconnect status', assert => {
-      producerState.setProducerDisconnectStatus()
-      assert.equal(producerState.getHealthyStatus(), false)
-      assert.equal(producerState.getReadyStatus(), false)
+      kafkaProducer.setProducerDisconnectStatus()
+      assert.equal(kafkaProducer.getHealthyStatus(), false)
+      assert.equal(kafkaProducer.getReadyStatus(), false)
       assert.end()
     })
 
