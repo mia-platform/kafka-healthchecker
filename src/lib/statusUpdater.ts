@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ConsumerCrashEvent } from 'kafkajs'
 import { ConsumerState, ProducerState } from './types'
 
 export class KafkaJSStatusUpdater {
@@ -30,7 +31,7 @@ export class KafkaJSStatusUpdater {
   setConsumerDisconnectStatus(consumerState: ConsumerState): void {
     consumerState.status = { healthy: false, ready: false }
   }
-  setConsumerCrashStatus(consumerState: ConsumerState, event: any): void {
+  setConsumerCrashStatus(consumerState: ConsumerState, event: ConsumerCrashEvent): void {
     consumerState.status = { healthy: event?.payload?.restart || false, ready: false }
   }
 

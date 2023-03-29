@@ -1,5 +1,5 @@
 import Tap from 'tap'
-import { Kafka, logLevel } from 'kafkajs'
+import { Kafka, logLevel, ConsumerCrashEvent } from 'kafkajs'
 import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
 import { ConsumerState, ProducerState } from '../src/lib/types'
 import { KafkaJSStatusUpdater } from '../src/lib/statusUpdater'
@@ -94,21 +94,35 @@ Tap.test('Unit tests: ', t => {
     })
 
     t.test('Set consumer crash status - event exists', assert => {
-      const event = {
+      const event : ConsumerCrashEvent = {
+        type: 'CRASH',
         payload: {
+          groupId: 'test-group',
           restart: true,
+          error: new Error('Consumer crashed'),
         },
+        id: 'test-id',
+        timestamp: 1680074273,
       }
       statusUpdater.setConsumerCrashStatus(consumerState, event)
       assert.equal(
         JSON.stringify(consumerState.status),
-        JSON.stringify({ healthy: event.payload.restart, ready: false })
+        JSON.stringify({ healthy: true, ready: false })
       )
       assert.end()
     })
 
     t.test('Set consumer crash status - event does not exist', assert => {
-      const event = {}
+      const event : ConsumerCrashEvent = {
+        type: 'CRASH',
+        payload: {
+          groupId: 'test-group',
+          restart: false,
+          error: new Error('Consumer crashed'),
+        },
+        id: 'test-id',
+        timestamp: 1680074273,
+      }
       statusUpdater.setConsumerCrashStatus(consumerState, event)
       assert.equal(
         JSON.stringify(consumerState.status),
