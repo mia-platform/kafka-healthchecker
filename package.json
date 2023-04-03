@@ -24,7 +24,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@mia-platform/eslint-config-mia": "^3.0.0",
-    "@swc-node/register": "^1.5.4",
+    "@swc-node/register": "^1.6.3",
     "@types/lodash.clonedeep": "^4.5.7",
     "@types/tap": "^15.0.7",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
