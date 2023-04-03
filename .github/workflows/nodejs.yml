@@ -27,11 +27,12 @@ jobs:
       - run: npm run build --if-present
 
       - run: docker network create app --driver bridge
-      - run: docker pull bitnami/zookeeper
-      - run: docker pull bitnami/kafka
+      - run: docker pull bitnami/zookeeper:latest
       - run: docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
-      - run: docker run --rm --network app --name=kafka -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' -e KAFKA_CFG_LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' -e KAFKA_INTER_BROKER_LISTENER_NAME='INTERNAL' -e ALLOW_PLAINTEXT_LISTENER=yes -p 2181:2181 -p 443:9092 -p 9092:9092 -p 9093:9093 bitnami/kafka
 
+      - run: docker pull bitnami/kafka:latest
+      - run: docker run -d --rm --name kafka --network=app -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' -e KAFKA_CFG_LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' -e KAFKA_INTER_BROKER_LISTENER_NAME='INTERNAL' -e ALLOW_PLAINTEXT_LISTENER=yes -p 2181:2181 -p 443:9092 -p 9092:9092 -p 9093:9093 bitnami/kafka
+      
       - run: sleep 5s && npm run coverage
 
       - name: Coveralls
