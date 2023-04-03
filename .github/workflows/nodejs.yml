@@ -27,7 +27,10 @@ jobs:
       - run: npm run build --if-present
 
       - run: docker network create app --driver bridge
-      - run: docker run -d --name=kafka --rm --network app -p 8081:8081 -p 8082:8082 -p 9092:9092 -p 9644:9644 docker.redpanda.com/vectorized/redpanda:latest redpanda start --overprovisioned --smp 1  --memory 1G --reserve-memory 0M --node-id 0 --check=false
+      - run: docker pull bitnami/zookeeper
+      - run: docker pull bitnami/kafka
+      - run: docker run -d --rm --name zookeeper --network=app -e ALLOW_ANONYMOUS_LOGIN=yes -p 2180:2181 bitnami/zookeeper
+      - run: docker run --rm --network app --name=kafka -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_CFG_ADVERTISED_LISTENERS='PLAINTEXT://127.0.0.1:9092,INTERNAL://localhost:9093' -e KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP='PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT' -e KAFKA_CFG_LISTENERS='PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093' -e KAFKA_INTER_BROKER_LISTENER_NAME='INTERNAL' -e ALLOW_PLAINTEXT_LISTENER=yes -p 2181:2181 -p 443:9092 -p 9092:9092 -p 9093:9093 bitnami/kafka
 
       - run: sleep 5s && npm run coverage
 
