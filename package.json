@@ -1,7 +1,7 @@
 {
   "name": "mia_template_service_name_placeholder",
-  "version": "0.1.0",
-  "description": "%CUSTOM_PLUGIN_SERVICE_DESCRIPTION%",
+  "version": "0.0.1",
+  "description": "A utility library to perform Kafka healthchecks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -17,9 +17,8 @@
     "build": "tsc --project build.tsconfig.json",
     "start": "lc39 dist/index.js",
     "start:local": "npm run build && npm start -- --env-path ./default.env",
-    "update-docker-version": "sed -i.bck \"s|version=\\\"[0-9]*\\.[0-9]*\\.[0-9]*.*\\\"|version=\\\"${npm_package_version}\\\"|\" Dockerfile",
-    "update-changelog": "node ./scripts/update-changelog.js ${npm_package_version}",
-    "version": "npm run update-changelog && npm run update-docker-version && rm -fr Dockerfile.bck && git add CHANGELOG.md Dockerfile"
+    "update-version": "./scripts/update-version.sh ${npm_package_version} && git add CHANGELOG.md",
+    "version": "npm run update-version"
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
@@ -34,9 +33,6 @@
     "kafkajs": "^2.2.4",
     "tap": "^16.3.0",
     "typescript": "^5.0.2"
-  },
-  "peerDependencies": {
-    "@mia-platform/lc39": "^6.0.2"
   },
   "engines": {
     "node": ">=16"
