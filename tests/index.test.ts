@@ -1,6 +1,6 @@
 import Tap from 'tap'
 import { Kafka, logLevel, ConsumerCrashEvent } from 'kafkajs'
-import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
+import { KafkaJSHealthChecker } from '../src/index'
 import { KafkaJSConsumer, KafkaJSProducer } from '../src/lib/types'
 
 Tap.test('Unit tests: ', t => {

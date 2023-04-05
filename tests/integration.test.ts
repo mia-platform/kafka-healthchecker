@@ -1,6 +1,6 @@
 import Tap from 'tap'
 import { Kafka, logLevel } from 'kafkajs'
-import { KafkaJSHealthChecker } from '../src/lib/kafkaHealthChecker'
+import { KafkaJSHealthChecker } from '../src/index'
 
 Tap.test('Integration tests: KafkaJSHealthChecker returns the correct health status ', async t => {
   const kafka = new Kafka({
