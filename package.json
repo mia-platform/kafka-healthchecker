@@ -1,6 +1,6 @@
 {
   "name": "@mia-platform/kafka-healthchecker",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "A utility library to perform Kafka healthchecks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,7 +38,6 @@
   "engines": {
     "node": ">=16"
   },
-  "private": true,
   "tap": {
     "check-coverage": false
   },
