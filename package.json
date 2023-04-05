@@ -1,6 +1,6 @@
 {
-  "name": "mia_template_service_name_placeholder",
-  "version": "0.1.0",
+  "name": "@mia-platform/kafka-healthchecker",
+  "version": "0.0.1",
   "description": "A utility library to perform Kafka healthchecks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
