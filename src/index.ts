@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-const { KafkaJSHealthChecker } = require('./lib/kafkaHealthChecker')
+import { KafkaJSHealthChecker } from './lib/kafkaHealthChecker'
 
-export { KafkaJSHealthChecker }
+export default KafkaJSHealthChecker
