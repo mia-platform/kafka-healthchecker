@@ -5,6 +5,7 @@
 [![Build Status][github-actions-svg]][github-actions]
 [![javascript style guide][standard-mia-svg]][standard-mia]
 [![Coverage Status][coverall-svg]][coverall-io]
+[![NPM version][npmjs-svg]][npmjs-com]
 
 </div>
 
@@ -180,5 +181,8 @@ To contribute to the project, please be mindful for this simple rules:
 
 [github-actions-svg]: https://github.com/mia-platform/flow-manager-client/actions/workflows/node.js.yml/badge.svg
 [github-actions]: https://github.com/mia-platform/kafka-healthchecker/actions
+
+[npmjs-svg]: https://img.shields.io/npm/v/@mia-platform/kafka-healthchecker.svg?logo=npm
+[npmjs-com]: https://www.npmjs.com/package/@mia-platform/kafka-healthchecker
 
 [pull-request]: https://github.com/mia-platform/kafka-healthchecker/pulls
