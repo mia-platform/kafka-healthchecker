@@ -1,6 +1,6 @@
 {
   "name": "@mia-platform/kafka-healthchecker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A utility library to perform Kafka healthchecks",
   "main": "src/index.ts",
   "scripts": {
