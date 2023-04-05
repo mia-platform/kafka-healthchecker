@@ -17,8 +17,9 @@
     "build": "tsc --project build.tsconfig.json",
     "start": "lc39 dist/index.js",
     "start:local": "npm run build && npm start -- --env-path ./default.env",
+    "update-changelog": "node scripts/update-changelog.js ${npm_package_version}",
     "update-version": "./scripts/update-version.sh ${npm_package_version} && git add CHANGELOG.md",
-    "version": "npm run update-version"
+    "version": "npm run update-changelog && git add CHANGELOG.md"
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
