@@ -16,4 +16,4 @@
 
 import { KafkaJSHealthChecker } from './lib/kafkaHealthChecker'
 
-export default KafkaJSHealthChecker
+export { KafkaJSHealthChecker }
