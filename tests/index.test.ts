@@ -14,21 +14,35 @@ Tap.test('Unit tests: ', t => {
     const consumer = kafka.consumer({ groupId: 'test-group-1' })
     const producer = kafka.producer()
 
-    t.test('Status is not healthy nor ready with no consumers and producers', assert => {
+    t.test('Status is not healthy nor ready with no consumers and producers - use constructor', assert => {
       const kafkaHealthChecker = new KafkaJSHealthChecker()
       assert.notOk(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - One consumer, no producers', assert => {
+    t.test('Status is not healthy nor ready with no consumers and producers - use constructor', assert => {
+      const { isHealthy, isReady } = new KafkaJSHealthChecker()
+      assert.notOk(isHealthy())
+      assert.notOk(isReady())
+      assert.end()
+    })
+
+    t.test('Status is healthy and not ready at startup - One consumer, no producers - use constructor', assert => {
       const kafkaHealthChecker = new KafkaJSHealthChecker([consumer])
       assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration', assert => {
+    t.test('Status is healthy and not ready at startup - One consumer, no producers - use constructor', assert => {
+      const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer])
+      assert.ok(isHealthy())
+      assert.notOk(isReady())
+      assert.end()
+    })
+
+    t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration - use constructor', assert => {
       const configuration = { checkStatusForAll: false }
       const kafkaHealthChecker = new KafkaJSHealthChecker([consumer], [], configuration)
       assert.ok(kafkaHealthChecker.isHealthy())
@@ -36,18 +50,41 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - No consumers, one producer', assert => {
+    t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration - use constructor', assert => {
+      const configuration = { checkStatusForAll: false }
+      const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer], [], configuration)
+      assert.ok(isHealthy())
+      assert.notOk(isReady())
+      assert.end()
+    })
+
+    t.test('Status is healthy and not ready at startup - No consumers, one producer - use constructor', assert => {
       const kafkaHealthChecker = new KafkaJSHealthChecker([], [producer])
       assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration', assert => {
+    t.test('Status is healthy and not ready at startup - No consumers, one producer - use constructor', assert => {
+      const { isHealthy, isReady } = new KafkaJSHealthChecker([], [producer])
+      assert.ok(isHealthy())
+      assert.notOk(isReady())
+      assert.end()
+    })
+
+    t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration - use constructor', assert => {
       const configuration = { checkStatusForAll: false }
       const kafkaHealthChecker = new KafkaJSHealthChecker([], [producer], configuration)
       assert.ok(kafkaHealthChecker.isHealthy())
       assert.notOk(kafkaHealthChecker.isReady())
+      assert.end()
+    })
+
+    t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration - use constructor', assert => {
+      const configuration = { checkStatusForAll: false }
+      const { isHealthy, isReady } = new KafkaJSHealthChecker([], [producer], configuration)
+      assert.ok(isHealthy())
+      assert.notOk(isReady())
       assert.end()
     })
 

@@ -48,7 +48,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     }
   }
 
-  isHealthy(): boolean {
+  isHealthy = () => {
     if (this.states.length <= 0) {
       return false
     }
@@ -59,7 +59,7 @@ export class KafkaJSHealthChecker implements KafkaHealthChecker {
     return this.atLeastOneConsumerOrProducerIsHealthy()
   }
 
-  isReady(): boolean {
+  isReady = () => {
     if (this.states.length <= 0) {
       return false
     }
