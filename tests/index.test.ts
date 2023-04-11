@@ -21,7 +21,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is not healthy nor ready with no consumers and producers - use constructor', assert => {
+    t.test('Status is not healthy nor ready with no consumers and producers - use destructuring', assert => {
       const { isHealthy, isReady } = new KafkaJSHealthChecker()
       assert.notOk(isHealthy())
       assert.notOk(isReady())
@@ -35,7 +35,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - One consumer, no producers - use constructor', assert => {
+    t.test('Status is healthy and not ready at startup - One consumer, no producers - use destructuring', assert => {
       const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer])
       assert.ok(isHealthy())
       assert.notOk(isReady())
@@ -50,7 +50,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration - use constructor', assert => {
+    t.test('Status is healthy and not ready at startup - One consumer, no producers, with configuration - use destructuring', assert => {
       const configuration = { checkStatusForAll: false }
       const { isHealthy, isReady } = new KafkaJSHealthChecker([consumer], [], configuration)
       assert.ok(isHealthy())
@@ -65,7 +65,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - No consumers, one producer - use constructor', assert => {
+    t.test('Status is healthy and not ready at startup - No consumers, one producer - use destructuring', assert => {
       const { isHealthy, isReady } = new KafkaJSHealthChecker([], [producer])
       assert.ok(isHealthy())
       assert.notOk(isReady())
@@ -80,7 +80,7 @@ Tap.test('Unit tests: ', t => {
       assert.end()
     })
 
-    t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration - use constructor', assert => {
+    t.test('Status is healthy and not ready at startup - No consumers, one producer, with configuration - use destructuring', assert => {
       const configuration = { checkStatusForAll: false }
       const { isHealthy, isReady } = new KafkaJSHealthChecker([], [producer], configuration)
       assert.ok(isHealthy())
