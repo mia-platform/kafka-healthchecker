@@ -13,7 +13,7 @@ This library helps to handle Kafka healthiness and readiness probes.
 
 ## Table of contents
 1. [Installation](#installation)
-2. [Description](#description)
+2. [Overview](#overview)
 3. [Usage](#usage)
 4. [Testing](#testing)
 5. [Contributing](#contributing)
@@ -24,7 +24,7 @@ This library helps to handle Kafka healthiness and readiness probes.
 npm i --save @mia-platform/kafka-healthchecker
 ```
 
-## Description <a name="description"></a>
+## Overview <a name="overview"></a>
 The library takes in input a list of Kafka *consumers*, a list of Kafka *producers* and a configuration object.
 
 It configures each consumer and producer in order to assign them an internal status that is updated as a result of Kafka events. Then, it exposes two methods:
