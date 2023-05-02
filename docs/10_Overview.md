@@ -7,6 +7,8 @@ It configures each consumer and producer in order to assign them an internal sta
 
 **In order to not lose any events, the library must be initialized before the consumers and the producers are connected to Kafka.**
 
+For more information about setup and initialization go to [Setup](./30_Setup.md) page.
+
 ## Consumer
 It follows a table of all the status of the consumers caused by Kafka events. The starting status is `{ healthy: true, ready: false }`.
 

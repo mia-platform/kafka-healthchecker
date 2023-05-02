@@ -1,7 +1,7 @@
 # Kafka HealthChecker Usage
 
 ## Quick start
-After the installation, you can import the library, create the `KafkaJSHealthChecker` object passing it one (or more) consumer or producer to get the methods `isHealthy` and `isReady`.
+After the [installation](./30_Setup.md), you can import the library, create the `KafkaJSHealthChecker` object passing it one (or more) consumer or producer to get the methods `isHealthy` and `isReady`. More information about these methods can be found on [Overview](./10_Overview.md) page.
 
 Example:
 

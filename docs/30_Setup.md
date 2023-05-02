@@ -6,6 +6,8 @@
 npm i --save @mia-platform/kafka-healthchecker
 ```
 
+To know how to use the library you can check the [Overview](./10_Overview.md) and [Usage](./20_Usage.md) pages.
+
 ## Testing locally
 
 Create a network connection
