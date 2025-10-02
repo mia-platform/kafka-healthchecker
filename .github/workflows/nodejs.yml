@@ -49,6 +49,7 @@ jobs:
         with:
           node-version: '24.x'
           check-latest: true
+          registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build --if-present
       - run: rm -rf node_modules

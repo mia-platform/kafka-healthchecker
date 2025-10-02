@@ -4,6 +4,10 @@
   "description": "A utility library to perform Kafka healthchecks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mia-platform/kafka-healthchecker.git"
+  },
   "scripts": {
     "lint:fix": "npm run lint -- --fix",
     "lint": "eslint . --ignore-path=.gitignore --ext=ts",
